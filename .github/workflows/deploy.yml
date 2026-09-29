@@ -42,6 +42,10 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          # Switches the repo's Pages source from "deploy from a branch" to
+          # "GitHub Actions" automatically, so no manual settings change is needed.
+          enablement: true
 
       - name: Upload build output
         uses: actions/upload-pages-artifact@v3
