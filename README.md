@@ -1,16 +1,18 @@
-# Plants vs. Zombies — Phaser 3 + TypeScript starter
+# Plants vs. Zombies — Phaser 3 + TypeScript
 
-A **lane-defense game** in the spirit of *Plants vs. Zombies*. This is a complete,
-runnable skeleton with a working playable slice, clean architecture and clear
-extension points.
+A **lane-defence game** in the spirit of *Plants vs. Zombies*: 8 adventure levels,
+plant unlocks, 8 plants and 3 zombie types — built from scratch with
+**Phaser 3**, **TypeScript** and **Vite**.
 
-Built with **Phaser 3**, **TypeScript** and **Vite**.
+Every sprite is drawn with Phaser's Graphics API and all music and sound effects
+are synthesised with the Web Audio API, so this repository contains **no binary
+asset files at all**.
 
 ---
 
 ## Quick start
 
-From the `plants-vs-zombies` folder:
+From the repository root:
 
 ```bash
 npm install
@@ -50,7 +52,7 @@ Other scripts:
 | Input | Action |
 | --- | --- |
 | **Drag a seed card onto the lawn** | Plant it where you drop. The outline is green for a valid cell, red for a blocked one |
-| **Press `1`–`8`** | Arm that seed instantly, then click a lawn cell |
+| **Press `1`–`6`** | Arm that seed instantly, then click a lawn cell |
 | Click a seed card, then click a lawn cell | Alternative click-to-plant path |
 | Left click a sun | Collect it |
 | Right click or `ESC` | Cancel the current selection |
@@ -82,18 +84,19 @@ the on-screen **Back** buttons always work; `ESC` works in a normal browser.
   levels, lawn grid guides, best wave and win count
 - **Eight plants** (see the table below) driven entirely from `PLANT_DEFS`
 - **Three ways to plant** — drag & drop (with a ghost preview and a green/red
-  cell outline), click a card then click a cell, or press `1`–`8`
-- Seed bank laid out as two rows of four, with sun cost, hotkey label, recharge
-  overlay and affordability dimming
+  cell outline), click a card then click a cell, or press `1`–`6`
+- Seed bank laid out as a single row of up to six cards, with sun cost, hotkey
+  label, recharge overlay and affordability dimming
 - **Zombie** — walks a lane, stops to chew plants, takes pea damage, dies
 - **Snow Pea** chills zombies (half speed, and it fires visibly **blue ice peas**)
 - **Wall-nut** visibly cracks through three damage states
 - **Cherry Bomb** / **Potato Mine** blast a radius and destroy themselves
 - Falling "sky sun" on a timer
-- Wave manager that gets harder each wave (more, tougher, faster zombies)
-- Win after 5 waves, lose if a zombie reaches the house, `R` to restart
-- HUD: sun counter, wave counter, control hints
-- Procedurally generated placeholder art — **no asset files required**
+- Per-level wave tables; **flag waves** pile on a huge final push
+- Clear every wave to finish a level; a zombie reaching the house ends it.
+  `R` retries the level, `M` returns to the menu
+- HUD: sun counter, level + wave counter, control hints
+- Procedurally generated art — **no asset files required**
 
 ### Plant roster
 
@@ -147,7 +150,7 @@ plants-vs-zombies/
     │   └── AudioManager.ts   # Procedural BGM loop + synthesised SFX
     ├── state/
     │   ├── settings.ts       # Persisted options (music, volumes, grid)
-    │   └── progress.ts       # Persisted stats (best wave, wins, games)
+    │   └── progress.ts       # Adventure progress, loadouts and stats
     ├── scenes/
     │   ├── PreloadScene.ts   # Generates textures (swap for real loading)
     │   ├── MainMenuScene.ts  # Title, menu buttons, music toggle, progress
@@ -180,8 +183,8 @@ plants-vs-zombies/
     │   └── WaveManager.ts    # Wave pacing and spawning
     └── ui/
         ├── Button.ts         # Menu button: hover / press / keyboard focus
-        ├── SeedBank.ts       # Two rows of cards, cooldowns, drag source
-        └── Hud.ts            # Sun / wave / hints
+        ├── SeedBank.ts       # Seed cards, recharges, drag source
+        └── Hud.ts            # Sun / level / wave / hints
 ```
 
 ### Architectural ideas worth keeping
@@ -213,7 +216,7 @@ plants-vs-zombies/
 
 ## Menus, persistence and audio
 
-Four front-end scenes sit in front of the game:
+The front end is a set of scenes, all reachable from the main menu:
 
 | Scene | Key | Contents |
 | --- | --- | --- |
@@ -249,9 +252,12 @@ reference it from a wave.
 Two tiny stores wrap `localStorage` and emit `changed` events:
 
 - `state/settings.ts` → `pvz.settings.v1` (music, volumes, `showGrid`)
-- `state/progress.ts` → `pvz.progress.v1` (best wave, wins, games)
+- `state/progress.ts` → `pvz.progress.v2` (`highestCompleted`, per-level
+  `loadouts`, games played, best wave)
 
 Both fall back to in-memory defaults if storage is unavailable (private mode).
+Adventure progress derives from a single number — `highestCompleted` — which
+drives `unlockedLevel`, `isUnlocked()`, `isCompleted()` and `unlockedPlants`.
 
 ### Audio
 
@@ -294,8 +300,12 @@ firedup: {
 
 ## Adding a new zombie type
 
-1. Extend `Zombie` (or parameterise it further via `ZombieOptions`).
-2. Spawn it from `WaveManager.spawnZombie()` based on the current wave.
+1. Add the variant to `ZombieType` in `src/types/index.ts`.
+2. Give it an entry in `ZOMBIE_DEFS` (`src/constants.ts`): `texture`, `hp`,
+   `armorHp` (headgear that soaks damage first and pops off) and `speed`.
+3. Draw its texture in `PreloadScene.createTextures()` — reuse the `drawZombie()`
+   helper and pass the headgear.
+4. Reference it from a wave in `src/levels.ts`, e.g. `wave(6000, 1500, { conehead: 3, buckethead: 1 })`.
 
 ## Replacing the placeholder art
 
