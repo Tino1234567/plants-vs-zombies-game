@@ -334,3 +334,15 @@ firedup: {
 - Phaser is bundled by Vite, so there is no CDN or global script tag needed.
 - `scale.mode = FIT` keeps the 1280×720 playfield letterboxed on any screen.
 - Everything is destroyed and rebuilt on `scene.restart()`, so pressing `R` is safe.
+
+---
+
+## Licence
+
+[MIT](LICENSE) © 2026 ThanosTHINOS.
+
+This is a fan-made homage built to study the genre. It contains **no assets from
+the original game** — every sprite is drawn with Phaser's Graphics API and all
+music and sound effects are synthesised at runtime with the Web Audio API.
+"Plants vs. Zombies" is a trademark of its respective owner; this project is not
+affiliated with or endorsed by them.
